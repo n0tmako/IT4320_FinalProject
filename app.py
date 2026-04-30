@@ -1,75 +1,59 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+import os
+import secrets
 
 app = Flask(__name__)
 
 # --- CONFIGURATION ---
-# Points Flask to your SQLite database file
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Required for session and flash messages to work
-app.config['SECRET_KEY'] = 'mizzou_it_secret_key_2026' 
+app.config['SECRET_KEY'] = secrets.token_hex(16) 
 
 db = SQLAlchemy(app)
 
-class Reservation(db.model):
-    _tablename__ = 'reservations'
-    id = db.column(db.integer, primary_key=True)
-    firstName = db.column(db.string(50), nullable=False)
-    lastName = db.column(db.string(50), nullable=False)
-    seatRow = db.column(db.integer, nullable=False)
-    seatColumn = db.column(db.integer, nullable=False) 
-    ResCode = db.column(db.string(10), nullable=False, unique=True) 
-    price = db.column(db.float, nullable=False) 
+class Reservation(db.Model):
+    __tablename__ = 'reservations'
+    id = db.Column(db.Integer, primary_key=True)
+    firstName = db.Column(db.String(50), nullable=False)
+    lastName = db.Column(db.String(50), nullable=False)
+    seatRow = db.Column(db.Integer, nullable=False)
+    seatColumn = db.Column(db.Integer, nullable=False) 
+    ResCode = db.Column(db.String(10), nullable=False, unique=True) 
 
-def getCost():
-    return [[100, 75, 50, 100] for _ in range(12)] 
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(50), nullable=False)
 
-def loadSeatingChart():
-    chart  = [[None] * 4 for _ in range(12)]
-    for r in Reservation.query.all():
-        chart[r.seatRow - 1][r.seatColumn -1] = r
-    return chart
+# --- PROJECT LOGIC ---
+def get_cost_matrix():
+    """Returns a 12x4 matrix of seat prices"""
+    cost_matrix = [[100, 75, 50, 100] for row in range(12)]
+    return cost_matrix
 
-ADMIN_USER = "admin"
-ADMIN_PASS = "admin123"
+def calculate_total_sales():
+    """Calculates revenue based on existing reservations"""
+    matrix = get_cost_matrix()
+    total = 0
+    reservations = Reservation.query.all()
+    for res in reservations:
+        # Subtracting 1 for 0-based matrix indexing
+        total += matrix[res.seatRow - 1][res.seatColumn - 1]
+    return total
 
 @app.route('/')
 def index():
-    return render_template('index.html')    
+    return render_template('index.html')
 
-@app.route('/admin/login', methods=['GET', 'POST'])
-def adminLogin():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username == ADMIN_USER and password == ADMIN_PASS:
-            session['admin_logged_in'] = True
-            return redirect(url_for('adminDashboard'))
-        else:
-            flash('Invalid credentials. Please try again.')
-    return render_template('admin_login.html') 
-
-@app.route('/admin/dashboard')
-def adminLogout():
-    session.pop('admin', None)
-    return redirect(url_for('index')) 
-
-@app.route("/admin/dashboard")
-def adminDashboard():
-    if not session.get("admin"):
-        return redirect(url_for("admin_login"))
-    chart = loadSeatingChart()
-    reservations = Reservation.query.all()
-    total = sum(r.price for r in reservations)
-    return render_template("admin_dashboard.html", chart=chart,
-                           reservations=reservations, total=total)
- 
- 
-@app.route("/reserve")
+@app.route('/reserve', methods=['GET', 'POST'])
 def reserve():
-    return render_template("reserve.html")
+    return render_template('reserve.html')
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_login():
+    return render_template('admin.html')
 
 if __name__ == '__main__':
-    # CRITICAL: host='0.0.0.0' allows Docker to connect to the app
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

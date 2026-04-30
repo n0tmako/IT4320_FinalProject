@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Bus Reservation - Reserve a Seat{% endblock %}
+
+{% block content %}
+<section class="panel panel--story" aria-label="Reservation Form">
+  <div class="panel__header">
+    <div class="panel__title">Book Your Seat</div>
+    <div class="tag">Step 1 of 2</div>
+  </div>
+
+  <form method="POST" action="{{ url_for('reserve') }}" class="form">
+    <div class="form-group">
+      <label for="firstName" class="form__label">First Name</label>
+      <input 
+        type="text" 
+        id="firstName" 
+        name="firstName" 
+        class="form__input" 
+        required 
+        placeholder="Enter your first name"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="lastName" class="form__label">Last Name</label>
+      <input 
+        type="text" 
+        id="lastName" 
+        name="lastName" 
+        class="form__input" 
+        required 
+        placeholder="Enter your last name"
+      />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="row" class="form__label">Seat Row (1–12)</label>
+        <select id="row" name="row" class="form__input" required>
+          <option value="">Select row</option>
+          {% for i in range(1, 13) %}
+            <option value="{{ i }}">Row {{ i }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="column" class="form__label">Seat Column (1–4)</label>
+        <select id="column" name="column" class="form__input" required>
+          <option value="">Select column</option>
+          {% for i in range(1, 5) %}
+            <option value="{{ i }}">Column {{ i }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">Continue to Checkout</button>
+      <a href="{{ url_for('index') }}" class="btn btn--ghost">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<section class="panel panel--visual" aria-label="Seating Chart">
+  <div class="panel__header">
+    <div class="panel__title">Bus Seating Chart</div>
+    <div class="tag tag--muted">12 × 4</div>
+  </div>
+
+  <div class="seating-grid">
+    {% for row in range(1, 13) %}
+      <div class="seating-row" data-row="{{ row }}">
+        <div class="row-label">{{ row }}</div>
+        {% for col in range(1, 5) %}
+          <div class="seat" data-row="{{ row }}" data-col="{{ col }}">
+            <span class="seat__number">{{ col }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="seating-legend">
+    <div class="legend-item">
+      <div class="seat seat--available"></div>
+      <span>Available</span>
+    </div>
+    <div class="legend-item">
+      <div class="seat seat--reserved"></div>
+      <span>Reserved</span>
+    </div>
+    <div class="legend-item">
+      <div class="seat seat--selected"></div>
+      <span>Your Selection</span>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Bus Reservation - Admin Login{% endblock %}
+
+{% block content %}
+<section class="panel panel--centered" aria-label="Admin Login">
+  <div class="panel__header">
+    <div class="panel__title">Admin Portal</div>
+    <div class="tag tag--muted">Restricted Access</div>
+  </div>
+
+  <form method="POST" action="{{ url_for('admin_login') }}" class="form">
+    <div class="form-group">
+      <label for="username" class="form__label">Username</label>
+      <input 
+        type="text" 
+        id="username" 
+        name="username" 
+        class="form__input" 
+        required 
+        placeholder="Enter your username"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="password" class="form__label">Password</label>
+      <input 
+        type="password" 
+        id="password" 
+        name="password" 
+        class="form__input" 
+        required 
+        placeholder="Enter your password"
+      />
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">Login</button>
+      <a href="{{ url_for('index') }}" class="btn btn--ghost">Back to Menu</a>
+    </div>
+  </form>
+
+  {% if show_error %}
+    <div class="alert alert--danger">
+      Invalid username or password. Please try again.
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

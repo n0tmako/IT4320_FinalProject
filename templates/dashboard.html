@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Bus Reservation - Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="panel panel--visual" aria-label="Seating Chart">
+  <div class="panel__header">
+    <div class="panel__title">Bus Seating Chart</div>
+    <div class="tag tag--muted">12 × 4 Layout</div>
+  </div>
+
+  <div class="seating-grid seating-grid--dashboard">
+    {% for row in range(1, 13) %}
+      <div class="seating-row" data-row="{{ row }}">
+        <div class="row-label">Row {{ row }}</div>
+        {% for col in range(1, 5) %}
+          {% set seat_data = seating_chart[row - 1][col - 1] %}
+          {% if seat_data %}
+            <div class="seat seat--reserved" title="Reserved: {{ seat_data.firstName }} {{ seat_data.lastName }}">
+              <span class="seat__code">{{ seat_data.ResCode[:4] }}</span>
+            </div>
+          {% else %}
+            <div class="seat seat--available" title="Available">
+              <span class="seat__number">{{ col }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="seating-legend">
+    <div class="legend-item">
+      <div class="seat seat--available"></div>
+      <span>Available</span>
+    </div>
+    <div class="legend-item">
+      <div class="seat seat--reserved"></div>
+      <span>Reserved</span>
+    </div>
+  </div>
+</section>
+
+<aside class="panel panel--sidebar" aria-label="Sales Summary">
+  <div class="panel__header">
+    <div class="panel__title">Financial Summary</div>
+    <div class="tag tag--muted">Live</div>
+  </div>
+
+  <div class="stats">
+    <div class="statRow">
+      <div class="statRow__label">Total Reservations</div>
+      <div class="statRow__value">{{ total_reservations }}</div>
+    </div>
+    <div class="statRow">
+      <div class="statRow__label">Seats Occupied</div>
+      <div class="statRow__value">{{ occupied_seats }} / 48</div>
+    </div>
+    <div class="statRow">
+      <div class="statRow__label">Occupancy Rate</div>
+      <div class="statRow__value">{{ "%.1f"|format((occupied_seats / 48) * 100) }}%</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="subhead">Revenue</div>
+  <div class="stats">
+    <div class="statRow">
+      <div class="statRow__label">Total Sales</div>
+      <div class="statRow__value">${{ "%.2f"|format(total_sales) }}</div>
+    </div>
+    <div class="statRow">
+      <div class="statRow__label">Average Seat Price</div>
+      <div class="statRow__value">${{ "%.2f"|format(avg_price) }}</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="actions">
+    <a href="{{ url_for('admin_logout') }}" class="btn btn--ghost">Logout</a>
+  </div>
+</aside>
+
+<section class="panel panel--story" aria-label="Reservations">
+  <div class="panel__header">
+    <div class="panel__title">Reservations</div>
+    <div class="tag">{{ total_reservations }}</div>
+  </div>
+
+  {% if reservations %}
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Seat</th>
+            <th>Code</th>
+            <th>Price</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for res in reservations %}
+            <tr data-id="{{ res.id }}">
+              <td>{{ res.firstName }} {{ res.lastName }}</td>
+              <td>Row {{ res.seatRow }}, Col {{ res.seatColumn }}</td>
+              <td><span class="tag">{{ res.ResCode }}</span></td>
+              <td>${{ "%.2f"|format(res.price) }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('admin_delete', res_id=res.id) }}" style="display: inline;">
+                  <button type="submit" class="btn btn--danger btn--small" onclick="return confirm('Delete this reservation?')">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state__title">No Reservations Yet</div>
+      <div class="empty-state__subtitle">The seating chart is empty. Students can start reserving seats.</div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
