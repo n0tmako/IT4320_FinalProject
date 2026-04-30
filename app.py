@@ -26,3 +26,40 @@ def loadSeatingChart():
 
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin123"
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')    
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def adminLogin():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == ADMIN_USER and password == ADMIN_PASS:
+            session['admin_logged_in'] = True
+            return redirect(url_for('adminDashboard'))
+        else:
+            flash('Invalid credentials. Please try again.')
+    return render_template('admin_login.html') 
+
+@app.route('/admin/dashboard')
+def adminLogout():
+    session.pop('admin', None)
+    return redirect(url_for('index')) 
+
+@app.route("/admin/dashboard")
+def adminDashboard():
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+    chart = loadSeatingChart()
+    reservations = Reservation.query.all()
+    total = sum(r.price for r in reservations)
+    return render_template("admin_dashboard.html", chart=chart,
+                           reservations=reservations, total=total)
+ 
+ 
+@app.route("/reserve")
+def reserve():
+    return render_template("reserve.html")
