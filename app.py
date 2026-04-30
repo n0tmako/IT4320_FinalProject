@@ -3,6 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
+# --- CONFIGURATION ---
+# Points Flask to your SQLite database file
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservations.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Required for session and flash messages to work
+app.config['SECRET_KEY'] = 'mizzou_it_secret_key_2026' 
+
 db = SQLAlchemy(app)
 
 class Reservation(db.model):
@@ -26,7 +33,6 @@ def loadSeatingChart():
 
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin123"
-
 
 @app.route('/')
 def index():
@@ -63,3 +69,7 @@ def adminDashboard():
 @app.route("/reserve")
 def reserve():
     return render_template("reserve.html")
+
+if __name__ == '__main__':
+    # CRITICAL: host='0.0.0.0' allows Docker to connect to the app
+    app.run(host='0.0.0.0', port=5000, debug=True)
