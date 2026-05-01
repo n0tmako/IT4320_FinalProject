@@ -57,3 +57,37 @@ def admin_login():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
+
+#--reservation logic--
+import uuid
+def generate_reservation_code():
+    return str(uuid4()).split('-'[0].upper()
+from flask import Flask, request, render_template
+from models import db, Reservation
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservations.db'
+db.init_app(app)
+@app.route(' /reserve', methods=['GET', 'POST'])
+def reserve():
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        row = int(request.form['row'])
+        column = int(request.form['column'])
+
+        cost_matrix = [[100, 75, 50, 100] for _ in range(12)]
+        price = cost_matrix[row][column]
+        code = generate_reservation_code()
+
+        new_reservation = Reservation(
+            first_name=first_name,
+            last_name=last_name,
+            row=row,
+            column=column,
+            price=price,
+            reservation_code=code
+        )
+        db.session.add(new_reservation)
+        db.session.commit()
+        return render_template('confirm.html', code=code)
+    return render_template('reserve.html')
