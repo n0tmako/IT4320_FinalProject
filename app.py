@@ -61,7 +61,7 @@ if __name__ == '__main__':
 #--reservation logic--
 import uuid
 def generate_reservation_code():
-    return str(uuid4()).split('-'[0].upper()
+    return str(uuid4()).split('-')[0].upper()
 from flask import Flask, request, render_template
 from models import db, Reservation
 app = Flask(__name__)
