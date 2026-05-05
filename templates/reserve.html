@@ -74,9 +74,16 @@
       <div class="seating-row" data-row="{{ row }}">
         <div class="row-label">{{ row }}</div>
         {% for col in range(1, 5) %}
-          <div class="seat" data-row="{{ row }}" data-col="{{ col }}">
-            <span class="seat__number">{{ col }}</span>
-          </div>
+          {% set seat_data = seating_chart[row - 1][col - 1] %}
+          {% if seat_data %}
+            <div class="seat seat--reserved" data-row="{{ row }}" data-col="{{ col }}" title="Reserved">
+              <span class="seat__number">{{ col }}</span>
+            </div>
+          {% else %}
+            <div class="seat seat--available" data-row="{{ row }}" data-col="{{ col }}" title="Available">
+              <span class="seat__number">{{ col }}</span>
+            </div>
+          {% endif %}
         {% endfor %}
       </div>
     {% endfor %}

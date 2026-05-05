@@ -6,7 +6,7 @@ import secrets
 app = Flask(__name__)
 
 # --- CONFIGURATION ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservations.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'final_project_files', 'reservations.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = secrets.token_hex(16) 
 
@@ -15,11 +15,11 @@ db = SQLAlchemy(app)
 class Reservation(db.Model):
     __tablename__ = 'reservations'
     id = db.Column(db.Integer, primary_key=True)
-    firstName = db.Column(db.String(50), nullable=False)
-    lastName = db.Column(db.String(50), nullable=False)
+    passengerName = db.Column(db.String(100), nullable=False)
     seatRow = db.Column(db.Integer, nullable=False)
     seatColumn = db.Column(db.Integer, nullable=False) 
-    ResCode = db.Column(db.String(10), nullable=False, unique=True) 
+    eTicketNumber = db.Column(db.String(50), nullable=False)
+    created = db.Column(db.DateTime)
 
 class Admin(db.Model):
     __tablename__ = 'admins'
@@ -40,8 +40,16 @@ def calculate_total_sales():
     reservations = Reservation.query.all()
     for res in reservations:
         # Subtracting 1 for 0-based matrix indexing
-        total += matrix[res.seatRow - 1][res.seatColumn - 1]
+        total += matrix[res.seatRow][res.seatColumn]
     return total
+
+def get_seating_chart():
+    """Returns a 12x4 matrix indicating reserved and available seats"""
+    seating_chart = [[None for col in range(4)] for row in range(12)]
+    reservations = Reservation.query.all()
+    for res in reservations:
+        seating_chart[res.seatRow][res.seatColumn] = res
+    return seating_chart
 
 @app.route('/')
 def index():
@@ -49,7 +57,8 @@ def index():
 
 @app.route('/reserve', methods=['GET', 'POST'])
 def reserve():
-    return render_template('reserve.html')
+    seating_chart = get_seating_chart()
+    return render_template('reserve.html', seating_chart=seating_chart)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_login():
