@@ -16,8 +16,8 @@
         {% for col in range(1, 5) %}
           {% set seat_data = seating_chart[row - 1][col - 1] %}
           {% if seat_data %}
-            <div class="seat seat--reserved" title="Reserved: {{ seat_data.firstName }} {{ seat_data.lastName }}">
-              <span class="seat__code">{{ seat_data.ResCode[:4] }}</span>
+            <div class="seat seat--reserved" title="Reserved: {{ seat_data.first_name }} {{ seat_data.last_name }}">
+              <span class="seat__code">{{ seat_data.reservation_code[:4] }}</span>
             </div>
           {% else %}
             <div class="seat seat--available" title="Available">
@@ -104,9 +104,9 @@
         <tbody>
           {% for res in reservations %}
             <tr data-id="{{ res.id }}">
-              <td>{{ res.firstName }} {{ res.lastName }}</td>
-              <td>Row {{ res.seatRow }}, Col {{ res.seatColumn }}</td>
-              <td><span class="tag">{{ res.ResCode }}</span></td>
+              <td>{{ res.first_name }} {{ res.last_name }}</td>
+              <td>Row {{ res.row }}, Col {{ res.column }}</td>
+              <td><span class="tag">{{ res.reservation_code }}</span></td>
               <td>${{ "%.2f"|format(res.price) }}</td>
               <td>
                 <form method="POST" action="{{ url_for('admin_delete', res_id=res.id) }}" style="display: inline;">
